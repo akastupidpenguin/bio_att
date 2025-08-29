@@ -1,4 +1,4 @@
-bio_att
+# bio_att
 Web app using mern+pytorch. Automating attendance and enhancing teacher's efficiency.
 # Smart Attendance System
 
