@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture Image</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
+        #captureBtn, #uploadBtn { padding: 15px 30px; font-size: 18px; cursor: pointer; border-radius: 8px; border: none; color: white; }
+        #captureBtn { background-color: #007bff; }
+        #uploadBtn { background-color: #28a745; margin-top: 20px; display: none; }
+        #preview { margin-top: 20px; max-width: 90%; border-radius: 8px; }
+        #message { margin-top: 20px; font-size: 18px; color: green; }
+        #fileInput { display: none; }
+    </style>
+</head>
+<body>
+    <input type="file" id="fileInput" accept="image/*" capture="environment">
+    <button id="captureBtn">Take Photo</button>
+    <img id="preview" src="" alt="Image Preview">
+    <button id="uploadBtn">Upload Photo</button>
+    <p id="message"></p>
+
+    <script src="config.js"></script>
+    <script>
+        const captureBtn = document.getElementById('captureBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const messageEl = document.getElementById('message');
+        let capturedImageBase64 = null;
+
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('sessionId');
+
+        if (!sessionId) {
+            messageEl.textContent = 'Error: No session ID found.';
+            messageEl.style.color = 'red';
+            captureBtn.disabled = true;
+        }
+
+        captureBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    capturedImageBase64 = e.target.result;
+                    uploadBtn.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        uploadBtn.addEventListener('click', async () => {
+            if (!capturedImageBase64) return;
+            
+            messageEl.textContent = 'Uploading...';
+            uploadBtn.disabled = true;
+            captureBtn.disabled = true;
+
+            try {
+                // Use API_BASE_URL from config.js
+                const apiUrl = `${window.APP_CONFIG.API_BASE_URL}/api/capture/upload/${sessionId}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: capturedImageBase64.split(',')[1] })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    messageEl.textContent = result.msg;
+                } else {
+                    throw new Error(result.msg);
+                }
+            } catch (error) {
+                messageEl.textContent = `Error: ${error.message}`;
+                messageEl.style.color = 'red';
+                uploadBtn.disabled = false;
+                captureBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

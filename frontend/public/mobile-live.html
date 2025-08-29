@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Camera</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f0f0; text-align: center; }
+        video { max-width: 100%; border-radius: 8px; border: 2px solid #ccc; }
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; border-radius: 8px; border: none; color: white; background-color: #007bff; margin-top: 1rem; }
+        p { font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>Live Attendance Camera</h1>
+    <video id="video" width="100%" height="auto" playsinline autoplay muted></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <button id="startBtn">Start Streaming</button>
+    <p id="status">Status: Not connected</p>
+
+    <script src="config.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startBtn = document.getElementById('startBtn');
+        const statusEl = document.getElementById('status');
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('sessionId');
+        let ws;
+        let streamInterval;
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                startBtn.style.display = 'none';
+                statusEl.textContent = 'Status: Connecting to laptop...';
+                
+                // Use WS_BASE_URL from config.js
+                const wsUrl = window.APP_CONFIG.WS_BASE_URL;
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    statusEl.textContent = 'Status: Streaming...';
+                    streamInterval = setInterval(() => {
+                        if (ws.readyState === WebSocket.OPEN) {
+                            const MAX_WIDTH = 640;
+                            const scale = MAX_WIDTH / video.videoWidth;
+                            canvas.width = MAX_WIDTH;
+                            canvas.height = video.videoHeight * scale;
+                            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                            const imageData = canvas.toDataURL('image/jpeg', 0.4).split(',')[1];
+                            ws.send(JSON.stringify({ type: 'image_frame', payload: { sessionId, image: imageData } }));
+                        }
+                    }, 2000);
+                };
+                ws.onclose = () => {
+                    statusEl.textContent = 'Status: Disconnected.';
+                    clearInterval(streamInterval);
+                };
+            } catch (err) {
+                statusEl.textContent = `Error: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

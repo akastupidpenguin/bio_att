@@ -1,0 +1,71 @@
+:root {
+  --font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  
+  /* Light Theme Variables */
+  --background-primary: #f4f7f9;
+  --background-secondary: #ffffff;
+  --background-tertiary: #e9ecef;
+  --text-primary: #1c1c1e;
+  --text-secondary: #555;
+  --border-color: #ddd;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --accent-color: #007BFF;
+  --accent-color-dark: #0056b3;
+  --success-color: #4CAF50;
+  --warning-color: #ff9800;
+  --danger-color: #f44336;
+}
+
+[data-theme='dark'] {
+  /* Dark Theme Variables */
+  --background-primary: #121212;
+  --background-secondary: #1e1e1e;
+  --background-tertiary: #2a2a2a;
+  --text-primary: #e4e6eb;
+  --text-secondary: #b0b3b8;
+  --border-color: #3e3e3e;
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --accent-color: #2196F3;
+  --accent-color-dark: #1769aa;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global Styles */
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-size: 16px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  background-color: #aaa !important;
+  color: #fff !important;
+  cursor: not-allowed;
+  transform: none;
+}
+
+input[type="date"], input[type="email"], input[type="password"] {
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-size: 16px;
+}
